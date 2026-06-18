@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { apiFetch } from "../imports/api";
+import { CategoryIcon } from "../imports/category_icons";
 
 interface SMSTxItem {
   id: string;
@@ -37,26 +38,6 @@ export function SMSTransactions() {
     fetchSMSTransactions();
   }, []);
 
-  const getCategoryIcon = (category: string) => {
-    switch (category.toLowerCase()) {
-      case "food":
-        return "🍕";
-      case "travel":
-        return "🚗";
-      case "utilities":
-        return "⚡";
-      case "shopping":
-        return "🛍️";
-      case "medical":
-      case "health":
-        return "💊";
-      case "entertainment":
-        return "🎬";
-      default:
-        return "💳";
-    }
-  };
-
   const getCategoryColors = (category: string) => {
     switch (category.toLowerCase()) {
       case "food":
@@ -89,11 +70,11 @@ export function SMSTransactions() {
   return (
     <div
       className="rounded-2xl p-5 flex flex-col gap-4 flex-1 h-full"
-      style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)" }}
+      style={{ background: "var(--card)", border: "1px solid var(--border)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span style={{ color: "#e8eaf0", fontSize: 13, fontWeight: 600 }}>Auto-Tracked SMS Transactions</span>
+        <span style={{ color: "var(--foreground)", fontSize: 13, fontWeight: 600 }}>Auto-Tracked SMS Transactions</span>
         <span
           className="flex items-center gap-1 rounded-full px-2 py-0.5"
           style={{ background: "rgba(0,212,180,0.12)", color: "#00d4b4", fontSize: 9, fontWeight: 600 }}
@@ -106,7 +87,7 @@ export function SMSTransactions() {
       {/* Table header */}
       <div
         className="grid gap-2 px-2"
-        style={{ gridTemplateColumns: "32px 1fr 80px 110px 80px", color: "#8b9ab4", fontSize: 10, fontWeight: 600 }}
+        style={{ gridTemplateColumns: "32px 1fr 80px 110px 80px", color: "var(--muted-foreground)", fontSize: 10, fontWeight: 600 }}
       >
         <div></div>
         <div>Merchant</div>
@@ -118,11 +99,11 @@ export function SMSTransactions() {
       {/* Rows */}
       <div className="flex flex-col gap-2 overflow-y-auto max-h-[180px]">
         {loading ? (
-          <span style={{ color: "#8b9ab4", fontSize: 12, textAlign: "center", padding: "10px 0" }}>
+          <span style={{ color: "var(--muted-foreground)", fontSize: 12, textAlign: "center", padding: "10px 0" }}>
             Loading SMS logs...
           </span>
         ) : transactions.length === 0 ? (
-          <span style={{ color: "#8b9ab4", fontSize: 11, textAlign: "center", padding: "20px 0" }}>
+          <span style={{ color: "var(--muted-foreground)", fontSize: 11, textAlign: "center", padding: "20px 0" }}>
             No SMS transactions tracked yet.
           </span>
         ) : (
@@ -135,14 +116,14 @@ export function SMSTransactions() {
                 className="grid items-center gap-2 px-2 py-2 rounded-xl"
                 style={{
                   gridTemplateColumns: "32px 1fr 80px 110px 80px",
-                  background: "#0d1321",
-                  border: "1px solid rgba(255,255,255,0.04)",
+                  background: "var(--background)",
+                  border: "1px solid var(--border)",
                 }}
               >
-                <div className="rounded-lg flex items-center justify-center" style={{ width: 28, height: 28, background: "#1a2035", fontSize: 15 }}>
-                  {getCategoryIcon(tx.category)}
+                <div className="rounded-lg flex items-center justify-center" style={{ width: 28, height: 28, background: "var(--secondary)", fontSize: 15 }}>
+                  <CategoryIcon category={tx.category} size={14} />
                 </div>
-                <span style={{ color: "#e8eaf0", fontSize: 12, fontWeight: 500 }} className="truncate">
+                <span style={{ color: "var(--foreground)", fontSize: 12, fontWeight: 500 }} className="truncate">
                   {cleanTitle}
                 </span>
                 <span
@@ -151,7 +132,7 @@ export function SMSTransactions() {
                 >
                   {tx.category}
                 </span>
-                <span style={{ color: "#8b9ab4", fontSize: 10 }}>{formatDate(tx.expense_date)}</span>
+                <span style={{ color: "var(--muted-foreground)", fontSize: 10 }}>{formatDate(tx.expense_date)}</span>
                 <span className="text-right" style={{ color: "#ef4444", fontSize: 12, fontWeight: 600 }}>
                   -{formatCurrency(tx.amount)}
                 </span>
@@ -166,7 +147,7 @@ export function SMSTransactions() {
         className="flex items-center justify-between px-3 py-2.5 rounded-xl mt-auto"
         style={{ background: "rgba(0,212,180,0.06)", border: "1px solid rgba(0,212,180,0.15)" }}
       >
-        <span style={{ color: "#8b9ab4", fontSize: 11, fontWeight: 600 }}>Total Auto-Tracked</span>
+        <span style={{ color: "var(--muted-foreground)", fontSize: 11, fontWeight: 600 }}>Total Auto-Tracked</span>
         <span style={{ color: "#00d4b4", fontSize: 14, fontWeight: 700 }}>{formatCurrency(totalSum)}</span>
       </div>
     </div>

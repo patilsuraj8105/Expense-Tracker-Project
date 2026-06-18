@@ -53,12 +53,12 @@ export function StatCards() {
       {/* Card 1: Top Category */}
       <div
         className="rounded-2xl p-5 flex flex-col gap-3"
-        style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)" }}
+        style={{ background: "var(--card)", border: "1px solid var(--border)" }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <div style={{ color: "#8b9ab4", fontSize: 11, fontWeight: 500 }}>Top Category</div>
-            <div style={{ color: "#8b9ab4", fontSize: 10, marginTop: 1 }}>Highest Spending Sector</div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 11, fontWeight: 500 }}>Top Category</div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 10, marginTop: 1 }}>Highest Spending Sector</div>
           </div>
           <div
             className="rounded-xl flex items-center justify-center"
@@ -68,13 +68,13 @@ export function StatCards() {
           </div>
         </div>
         <div>
-          <div style={{ color: "#e8eaf0", fontSize: 22, fontWeight: 700 }}>
+          <div style={{ color: "var(--foreground)", fontSize: 22, fontWeight: 700 }}>
             {loading ? "Loading..." : topCategory}
           </div>
           <div className="flex items-center gap-1 mt-1">
             <TrendingUp size={12} color="#00d4b4" />
             <span style={{ color: "#00d4b4", fontSize: 11, fontWeight: 600 }}>Active</span>
-            <span style={{ color: "#8b9ab4", fontSize: 10 }}>this month</span>
+            <span style={{ color: "var(--muted-foreground)", fontSize: 10 }}>this month</span>
           </div>
         </div>
       </div>
@@ -82,12 +82,12 @@ export function StatCards() {
       {/* Card 2: Total Spent */}
       <div
         className="rounded-2xl p-5 flex flex-col gap-3"
-        style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)" }}
+        style={{ background: "var(--card)", border: "1px solid var(--border)" }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <div style={{ color: "#8b9ab4", fontSize: 11, fontWeight: 500 }}>Total Outflow</div>
-            <div style={{ color: "#8b9ab4", fontSize: 10, marginTop: 1 }}>This Month's Spending</div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 11, fontWeight: 500 }}>Total Outflow</div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 10, marginTop: 1 }}>This Month's Spending</div>
           </div>
           <div
             className="rounded-xl flex items-center justify-center"
@@ -101,20 +101,20 @@ export function StatCards() {
             {loading ? "Loading..." : formatCurrency(totalExpenses)}
           </div>
           <div className="flex items-center gap-1 mt-1">
-            <span style={{ color: "#8b9ab4", fontSize: 10 }}>Tracked from active expenses</span>
+            <span style={{ color: "var(--muted-foreground)", fontSize: 10 }}>Tracked from active expenses</span>
           </div>
         </div>
       </div>
 
-      {/* Card 3: Net Worth (Mocked) */}
+      {/* Card 3: Net Worth (Dynamic) */}
       <div
         className="rounded-2xl p-5 flex flex-col gap-3"
-        style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)" }}
+        style={{ background: "var(--card)", border: "1px solid var(--border)" }}
       >
         <div className="flex items-center justify-between">
           <div>
-            <div style={{ color: "#8b9ab4", fontSize: 11, fontWeight: 500 }}>Simulated Accounts</div>
-            <div style={{ color: "#8b9ab4", fontSize: 10, marginTop: 1 }}>All accounts</div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 11, fontWeight: 500 }}>Simulated Accounts</div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 10, marginTop: 1 }}>All accounts</div>
           </div>
           <div
             className="rounded-xl flex items-center justify-center"
@@ -124,9 +124,11 @@ export function StatCards() {
           </div>
         </div>
         <div>
-          <div style={{ color: "#e8eaf0", fontSize: 22, fontWeight: 700 }}>₹8,65,320</div>
+          <div style={{ color: "var(--foreground)", fontSize: 22, fontWeight: 700 }}>
+            {loading ? "Loading..." : formatCurrency(865320 - totalExpenses)}
+          </div>
           <div className="flex items-center gap-1 mt-1">
-            <span style={{ color: "#8b9ab4", fontSize: 10 }}>Includes assets and cash</span>
+            <span style={{ color: "var(--muted-foreground)", fontSize: 10 }}>Includes assets and cash</span>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Calendar, Download, Trash2 } from "lucide-react";
-import { apiFetch } from "../imports/api";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { apiFetch, BACKEND_URL } from "../imports/api";
+import { CategoryIcon } from "../imports/category_icons";
 
 interface ExpenseItem {
   id: string;
@@ -24,27 +24,6 @@ const catColors: Record<string, { bg: string; color: string }> = {
   Health: { bg: "rgba(34,197,94,0.15)", color: "#4ade80" },
   Entertainment: { bg: "rgba(168,85,247,0.15)", color: "#c084fc" },
   Others: { bg: "rgba(255,255,255,0.08)", color: "#8b9ab4" },
-};
-
-const getCategoryIcon = (category: string) => {
-  switch (category.toLowerCase()) {
-    case "food":
-      return "🍕";
-    case "travel":
-      return "🚗";
-    case "utilities":
-    case "bills":
-      return "⚡";
-    case "shopping":
-      return "🛍️";
-    case "medical":
-    case "health":
-      return "💊";
-    case "entertainment":
-      return "🎬";
-    default:
-      return "💳";
-  }
 };
 
 export function TransactionsPage() {
@@ -74,6 +53,7 @@ export function TransactionsPage() {
       
       const params = [];
       if (activeCategory !== "All") params.push(`category=${activeCategory}`);
+      if (search.trim()) params.push(`search=${encodeURIComponent(search.trim())}`);
       
       const isValidYear = (d: string) => {
         const yr = parseInt(d.split("-")[0], 10);
@@ -101,7 +81,7 @@ export function TransactionsPage() {
 
   useEffect(() => {
     fetchExpenses();
-  }, [activeCategory, startDate, endDate]);
+  }, [activeCategory, startDate, endDate, search]);
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,9 +135,19 @@ export function TransactionsPage() {
 
       if (startDate && isValidYear(startDate)) params.push(`start_date=${startDate}`);
       if (endDate && isValidYear(endDate)) params.push(`end_date=${endDate}`);
+      if (activeCategory !== "All") params.push(`category=${encodeURIComponent(activeCategory)}`);
+      if (search.trim()) params.push(`search=${encodeURIComponent(search.trim())}`);
       const query = params.length > 0 ? `?${params.join("&")}` : "";
 
-      const response = await apiFetch(`/export/excel${query}`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BACKEND_URL}/export/excel${query}`, {
+        method: "GET",
+        headers: {
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+          "Accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      });
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -168,20 +158,22 @@ export function TransactionsPage() {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
+      } else if (response.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
       } else {
-        alert("Failed to export Excel. Please check that selected dates are valid.");
+        const errorText = await response.text().catch(() => "Unknown error");
+        alert(`Failed to export Excel (${response.status}): ${errorText}`);
       }
     } catch (err) {
       console.error("Error downloading excel:", err);
-      alert("An error occurred while exporting the file.");
+      alert("An error occurred while exporting the file. Make sure the backend server is running.");
     } finally {
       setExporting(false);
     }
   };
 
-  const filtered = transactions.filter((t) =>
-    t.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = transactions;
 
   const totalSpent = filtered.reduce((s, t) => s + t.amount, 0);
 
@@ -198,58 +190,7 @@ export function TransactionsPage() {
     }).format(val);
   };
 
-  const [calMonth, setCalMonth] = useState(new Date().getMonth() + 1);
-  const [calYear, setCalYear] = useState(new Date().getFullYear());
-
-  const handlePrevMonth = () => {
-    if (calMonth === 1) {
-      setCalMonth(12);
-      setCalYear((y) => y - 1);
-    } else {
-      setCalMonth((m) => m - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (calMonth === 12) {
-      setCalMonth(1);
-      setCalYear((y) => y + 1);
-    } else {
-      setCalMonth((m) => m + 1);
-    }
-  };
-
-  useEffect(() => {
-    if (startDate) {
-      try {
-        const d = new Date(startDate);
-        if (!isNaN(d.getTime())) {
-          setCalMonth(d.getMonth() + 1);
-          setCalYear(d.getFullYear());
-        }
-      } catch (e) {}
-    }
-  }, [startDate]);
-
-  const getDailyTotals = () => {
-    const map: Record<string, number> = {};
-    filtered.forEach((tx) => {
-      map[tx.expense_date] = (map[tx.expense_date] || 0) + tx.amount;
-    });
-    return map;
-  };
-  const dailyTotals = getDailyTotals();
-
-  const firstDayIndex = new Date(calYear, calMonth - 1, 1).getDay();
-  const totalDays = new Date(calYear, calMonth, 0).getDate();
-  const cells = [];
-  for (let i = 0; i < firstDayIndex; i++) {
-    cells.push({ day: null, dateStr: "" });
-  }
-  for (let d = 1; d <= totalDays; d++) {
-    const dateStr = `${calYear}-${String(calMonth).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    cells.push({ day: d, dateStr });
-  }
+// Overview stats placeholder
 
   return (
     <div className="p-6 flex flex-col gap-5">
@@ -271,113 +212,8 @@ export function TransactionsPage() {
         </div>
       </div>
 
-      {/* Main Split Layout: Calendar on Left, Table and controls on Right */}
-      <div className="flex flex-col lg:flex-row gap-5 items-start">
-        
-        {/* Left Column: Calendar Card */}
-        <div className="w-full lg:w-[320px] flex-shrink-0 rounded-2xl p-4 flex flex-col gap-4" style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)" }}>
-          {/* Calendar Header */}
-          <div className="flex items-center justify-between px-1">
-            <button
-              onClick={handlePrevMonth}
-              className="flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors"
-              style={{ color: "#8b9ab4", background: "none", border: "none", cursor: "pointer", width: 24, height: 24 }}
-            >
-              ◀
-            </button>
-            <span style={{ color: "#e8eaf0", fontSize: 13, fontWeight: 700 }}>
-              {new Date(calYear, calMonth - 1).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-            </span>
-            <button
-              onClick={handleNextMonth}
-              className="flex items-center justify-center rounded-lg hover:bg-slate-800 transition-colors"
-              style={{ color: "#8b9ab4", background: "none", border: "none", cursor: "pointer", width: 24, height: 24 }}
-            >
-              ▶
-            </button>
-          </div>
-
-          {/* Calendar Weekday Names */}
-          <div className="grid grid-cols-7 text-center mb-1" style={{ color: "#8b9ab4", fontSize: 10, fontWeight: 600 }}>
-            {["S", "M", "T", "W", "T", "F", "S"].map((dayName, idx) => (
-              <div key={idx} className="py-0.5">{dayName}</div>
-            ))}
-          </div>
-
-          {/* Calendar Days Grid */}
-          <div className="grid grid-cols-7 gap-1">
-            {cells.map((cell, idx) => {
-              const hasExpense = cell.dateStr && dailyTotals[cell.dateStr] > 0;
-              const spentAmt = hasExpense ? dailyTotals[cell.dateStr] : 0;
-              const isSelected = cell.dateStr && startDate === cell.dateStr && endDate === cell.dateStr;
-
-              return (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    if (!cell.dateStr) return;
-                    if (isSelected) {
-                      setStartDate("");
-                      setEndDate("");
-                    } else {
-                      setStartDate(cell.dateStr);
-                      setEndDate(cell.dateStr);
-                    }
-                  }}
-                  className="rounded-lg flex flex-col justify-between p-1 text-center select-none"
-                  style={{
-                    height: "44px",
-                    background: isSelected 
-                      ? "rgba(0, 212, 180, 0.15)" 
-                      : hasExpense 
-                        ? "rgba(239, 68, 68, 0.08)" 
-                        : cell.day 
-                          ? "#161c2e" 
-                          : "transparent",
-                    border: isSelected 
-                      ? "1px solid #00d4b4" 
-                      : hasExpense 
-                        ? "1px solid rgba(239, 68, 68, 0.2)" 
-                        : cell.day 
-                          ? "1px solid rgba(255,255,255,0.03)" 
-                          : "none",
-                    cursor: cell.day ? "pointer" : "default",
-                    opacity: cell.day ? 1 : 0.2,
-                    transition: "all 0.15s"
-                  }}
-                >
-                  {cell.day ? (
-                    <>
-                      <span 
-                        style={{ 
-                          fontSize: 10, 
-                          fontWeight: 600, 
-                          color: isSelected 
-                            ? "#00d4b4" 
-                            : hasExpense 
-                              ? "#ef4444" 
-                              : "#e8eaf0"
-                        }}
-                      >
-                        {cell.day}
-                      </span>
-                      {hasExpense ? (
-                        <span style={{ fontSize: 7, color: "#ef4444", fontWeight: 700 }} className="truncate">
-                          ₹{spentAmt < 1000 ? spentAmt : `${(spentAmt / 1000).toFixed(0)}k`}
-                        </span>
-                      ) : (
-                        <span style={{ height: 10 }} />
-                      )}
-                    </>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: Controls and Transactions Table */}
-        <div className="flex-1 w-full flex flex-col gap-4">
+      {/* Controls and Transactions Table */}
+      <div className="flex-1 w-full flex flex-col gap-4">
           
           {/* Control bar: Search + Date Pickers + Export */}
           <div className="flex gap-3 items-center justify-between flex-wrap p-4 rounded-xl" style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -401,6 +237,7 @@ export function TransactionsPage() {
               <input
                 type="date"
                 value={startDate}
+                max={endDate || undefined}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="date-filter-input"
                 style={{
@@ -424,6 +261,7 @@ export function TransactionsPage() {
               <input
                 type="date"
                 value={endDate}
+                min={startDate || undefined}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="date-filter-input"
                 style={{
@@ -526,17 +364,17 @@ export function TransactionsPage() {
                 const cat = catColors[tx.category] ?? { bg: "rgba(255,255,255,0.08)", color: "#8b9ab4" };
                 return (
                   <div key={tx.id} className="grid items-center px-5 py-3" style={{ gridTemplateColumns: "40px 1fr 100px 140px 100px 50px", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                    <div className="rounded-lg flex items-center justify-center" style={{ width: 32, height: 32, background: "#1a2035", fontSize: 16 }}>
-                      {getCategoryIcon(tx.category)}
+                    <div className="rounded-lg flex items-center justify-center" style={{ width: 32, height: 32, background: "var(--secondary)", fontSize: 16 }}>
+                      <CategoryIcon category={tx.category} size={15} color={cat.color} />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span style={{ color: "#e8eaf0", fontSize: 13, fontWeight: 500 }} className="truncate">{tx.title}</span>
+                      <span style={{ color: "var(--foreground)", fontSize: 13, fontWeight: 500 }} className="truncate">{tx.title}</span>
                       {tx.is_anomaly && <span style={{ color: "#ef4444", fontSize: 9 }} className="font-semibold">⚠️ AI Flagged Anomaly</span>}
                     </div>
                     <span className="rounded-full px-2 py-0.5 text-center w-fit" style={{ background: cat.bg, color: cat.color, fontSize: 9, fontWeight: 600 }}>
                       {tx.category}
                     </span>
-                    <span style={{ color: "#8b9ab4", fontSize: 12 }}>{formatDate(tx.expense_date)}</span>
+                    <span style={{ color: "var(--muted-foreground)", fontSize: 12 }}>{formatDate(tx.expense_date)}</span>
                     <span className="text-right" style={{ color: "#ef4444", fontSize: 13, fontWeight: 600 }}>
                       -{formatCurrency(tx.amount)}
                     </span>
@@ -544,7 +382,9 @@ export function TransactionsPage() {
                       <button
                         onClick={() => handleDeleteExpense(tx.id)}
                         className="cursor-pointer p-1 rounded-lg hover:bg-rgba(239,68,68,0.1) hover:text-[#ef4444] transition-all"
-                        style={{ color: "#8b9ab4" }}
+                        style={{ color: "var(--muted-foreground)" }}
+                        aria-label="Delete expense"
+                        title="Delete expense"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -555,7 +395,6 @@ export function TransactionsPage() {
             )}
           </div>
         </div>
-      </div>
 
       {/* Add Expense Modal */}
       {isAddOpen && (

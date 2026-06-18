@@ -168,7 +168,8 @@ def predict_overspend_likelihood(
         category=category,
         month=target_month,
         budget=budget_amount,
-        amount=amount
+        amount=amount,
+        user_id=user_id
     )
     
     # 4. Strict check override: If transaction math mathematically breaches budget, flag True

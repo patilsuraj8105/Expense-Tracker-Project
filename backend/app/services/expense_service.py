@@ -36,7 +36,8 @@ def get_expenses(
     limit: int = 20,
     category: Optional[str] = None,
     start_date: Optional[date] = None,
-    end_date: Optional[date] = None
+    end_date: Optional[date] = None,
+    search: Optional[str] = None
 ):
     query = db.query(Expense).filter(Expense.user_id == user_id)
     
@@ -46,6 +47,8 @@ def get_expenses(
         query = query.filter(Expense.expense_date >= start_date)
     if end_date:
         query = query.filter(Expense.expense_date <= end_date)
+    if search:
+        query = query.filter(Expense.title.ilike(f"%{search.strip()}%"))
         
     query = query.order_by(Expense.expense_date.desc(), Expense.amount.desc())
     return query.offset(skip).limit(limit).all()

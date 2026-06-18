@@ -5,13 +5,17 @@ from typing import Optional
 import openpyxl
 from io import BytesIO
 
-def export_expenses_to_excel(db: Session, user_id: str, start_date: Optional[date], end_date: Optional[date]) -> BytesIO:
+def export_expenses_to_excel(db: Session, user_id: str, start_date: Optional[date], end_date: Optional[date], category: Optional[str] = None, search: Optional[str] = None) -> BytesIO:
     query = db.query(Expense).filter(Expense.user_id == user_id)
     
     if start_date:
         query = query.filter(Expense.expense_date >= start_date)
     if end_date:
         query = query.filter(Expense.expense_date <= end_date)
+    if category:
+        query = query.filter(Expense.category == category)
+    if search:
+        query = query.filter(Expense.title.ilike(f"%{search.strip()}%"))
         
     expenses = query.order_by(Expense.expense_date.desc()).all()
     

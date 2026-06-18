@@ -3,8 +3,9 @@ import warnings
 import joblib
 import pandas as pd
 
-# Path to the anomaly model
-MODEL_PATH = "anomaly_model.pkl"
+# Path to the anomaly model (resolved absolutely relative to this file)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODEL_PATH = os.path.join(BASE_DIR, "anomaly_model.pkl")
 
 _model = None
 
