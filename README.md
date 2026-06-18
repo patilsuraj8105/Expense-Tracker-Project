@@ -1,92 +1,114 @@
-# Expense Tracker Backend API
+# Smart Expense Tracker & AI Financial Insights
 
-This is a production-ready Expense Tracker Backend API built with FastAPI, SQLAlchemy, and Supabase PostgreSQL.
+A premium, production-ready full-stack personal finance application built using a **FastAPI** backend (with SQLAlchemy and Supabase PostgreSQL) and a **Vite + React** frontend. 
 
-## Features
-- **Authentication**: JWT-based user registration and login.
-- **Expenses**: CRUD operations with pagination, sorting, and filtering.
-- **Budgets**: Set monthly budgets and view budget status.
-- **Analytics**: Get summary, category-wise, and monthly aggregated analytics.
-- **Export**: Export expenses to Excel based on date range.
+The platform leverages machine learning (Random Forest Classifiers) to dynamically predict budget overspending, detect transaction anomalies, and parse subscription patterns.
 
-## Prerequisites
-- Python 3.9+
-- Supabase PostgreSQL database URL
+---
 
-## Setup Instructions
+## Key Features
 
-1. **Install Dependencies**
+### 💻 Frontend (Vite + React)
+- **Interactive Light & Dark Themes**: Client-side theme-switching persisted in `localStorage`.
+- **Dynamic AI Notification Bell**: Popover dropdown showing real-time transaction anomalies, auto-sync logs, and system statuses.
+- **Dynamic & Editable Category Budgets**: Category limits are loaded from/saved to `localStorage` and can be adjusted via a modern modal in the budget page.
+- **Unified Lucide Icon Mapping**: Unified visual iconography replacing raw emojis across all components.
+- **Live AI Insight Cards**:
+  - *Duplicate Charge Protection*: Scans transactions on the fly to detect and list identical charge matches.
+  - *AI Subscription Alerts*: Identifies recurring monthly payments (e.g. Netflix, Spotify) and calculates the projected outflow.
+- **Complete Route Registration**: Fully integrated tabs for **Dashboard**, **Transactions**, **Budget**, **Analytics**, **Goals**, **Cards**, **Bills**, and **Savings**.
+
+### ⚙️ Backend (FastAPI + ML)
+- **Secure CORS Management**: Comma-separated domain restriction through settings-based origin control.
+- **Absolute ML Model Paths**: Pickle files resolved dynamically to eliminate working directory errors.
+- **User-Isolated ML Models**: Models are isolated per user (e.g. `overspend_model_{user_id}.pkl`) and cached in-memory to prevent concurrent race conditions during training.
+- **Standardized Automated Testing**: Lightweight unit testing framework covering SQL date-range queries.
+
+---
+
+## Tech Stack
+* **Frontend**: React 18, React Router 7, Vite 6, TailwindCSS, Lucide React, Recharts.
+* **Backend**: FastAPI, Uvicorn, SQLAlchemy, Alembic, PostgreSQL (Supabase), Scikit-Learn, Joblib, Pandas.
+
+---
+
+## Directory Structure
+```
+├── backend/
+│   ├── app/
+│   │   ├── core/           # Config, security, ML models (anomaly, overspend)
+│   │   ├── models/         # SQLAlchemy models (user, expense, budget)
+│   │   ├── routers/        # FastAPI endpoint routers (auth, expenses, etc.)
+│   │   ├── services/       # Business logic layer
+│   │   └── tests/          # Python automated test suite
+│   ├── requirements.txt
+│   └── main.py
+└── frontend/
+    ├── src/
+    │   ├── app/
+    │   │   ├── components/ # Shared layout, cards, notifications dropdown
+    │   │   ├── pages/      # Pages (Dashboard, Budget, AIInsights, etc.)
+    │   │   └── routes.tsx  # React Router config
+    │   ├── styles/         # Global styles & theme configuration
+    │   └── main.tsx
+    ├── package.json
+    └── vite.config.ts
+```
+
+---
+
+## Setup & Run Instructions
+
+### 1. Backend API Server Setup
+
+1. **Navigate to the backend directory**:
+   ```bash
+   cd backend
+   ```
+2. **Install Python dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
-
-2. **Configure Environment Variables**
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Update `.env` with your actual Supabase PostgreSQL connection string and a secure `SECRET_KEY`.
-
-3. **Database Migrations**
-   Generate and apply the initial migration to create tables in your database:
+3. **Configure Environment Variables**:
+   Copy `.env.example` to `.env` and fill in your Supabase connection string and custom secrets:
    ```bash
-   alembic revision --autogenerate -m "Initial migration"
+   cp .env.example .env
+   ```
+4. **Database Migrations**:
+   ```bash
    alembic upgrade head
    ```
-
-4. **Run the Server**
+5. **Run the Uvicorn Server**:
    ```bash
-   uvicorn app.main:app --reload
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
    ```
+   * Access API Documentation: Swagger UI (`http://127.0.0.1:8000/docs`) or ReDoc (`http://127.0.0.1:8000/redoc`).
 
-5. **API Documentation**
-   - Swagger UI: `http://127.0.0.1:8000/docs`
-   - ReDoc: `http://127.0.0.1:8000/redoc`
+---
 
-## Sample Requests
+### 2. Frontend Development Server Setup
 
-### 1. Register User
+1. **Navigate to the frontend directory**:
+   ```bash
+   cd ../frontend
+   ```
+2. **Install Node dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Run the Vite Server**:
+   ```bash
+   npm run dev
+   ```
+   * Open `http://localhost:5173/` in your browser.
+
+---
+
+## Running Automated Tests
+
+To execute the backend date-filtering and service logic tests:
 ```bash
-curl -X 'POST' \
-  'http://127.0.0.1:8000/auth/register' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "full_name": "John Doe",
-  "email": "john@example.com",
-  "password": "securepassword123"
-}'
+cd backend
+python app/tests/run_tests.py
 ```
-
-### 2. Login
-```bash
-curl -X 'POST' \
-  'http://127.0.0.1:8000/auth/login' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "john@example.com",
-  "password": "securepassword123"
-}'
-```
-*(Copy the access_token from the response)*
-
-### 3. Create Expense
-```bash
-curl -X 'POST' \
-  'http://127.0.0.1:8000/expenses' \
-  -H 'Authorization: Bearer <your_token_here>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "title": "Groceries",
-  "amount": 150.50,
-  "category": "Food",
-  "description": "Weekly groceries",
-  "expense_date": "2026-06-15"
-}'
-```
-
-### 4. Get Analytics Summary
-```bash
-curl -X 'GET' \
-  'http://127.0.0.1:8000/analytics/summary' \
-  -H 'Authorization: Bearer <your_token_here>'
-```
+*(This executes standard library `unittest` suites using an isolated, in-memory SQLite database instance).*

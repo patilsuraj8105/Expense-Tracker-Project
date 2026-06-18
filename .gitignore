@@ -52,3 +52,7 @@ dist-ssr/
 .idea/
 .DS_Store
 Thumbs.db
+
+# User-isolated ML models
+backend/overspend_model_*.pkl
+
