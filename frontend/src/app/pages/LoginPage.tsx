@@ -5,9 +5,9 @@ import { API_URL } from "../imports/config";
 
 export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("john@example.com");
-  const [password, setPassword] = useState("password123");
-  const [fullName, setFullName] = useState("John Doe");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -220,7 +220,7 @@ export function LoginPage() {
               <input
                 required
                 type="email"
-                placeholder="john@example.com"
+                placeholder="Username or Email ID"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 style={{ background: "transparent", border: "none", outline: "none", color: "#e8eaf0", fontSize: 12, width: "100%" }}
