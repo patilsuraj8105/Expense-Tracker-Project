@@ -9,8 +9,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Parse allowed origins from settings
-origins = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
+# Parse allowed origins from settings and include deployment origins
+origins = [
+    "https://expense-tracker-project-1-c19u.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:3000"
+]
+for o in settings.ALLOWED_ORIGINS.split(","):
+    clean_o = o.strip()
+    if clean_o and clean_o not in origins:
+        origins.append(clean_o)
 
 app.add_middleware(
     CORSMiddleware,
