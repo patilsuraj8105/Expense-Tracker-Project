@@ -5,9 +5,9 @@ import { API_URL } from "../imports/config";
 
 export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("john@example.com");
+  const [password, setPassword] = useState("password123");
+  const [fullName, setFullName] = useState("John Doe");
   
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
