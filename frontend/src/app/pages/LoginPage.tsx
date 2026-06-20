@@ -197,7 +197,7 @@ export function LoginPage() {
                 <input
                   required
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Enter your name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   style={{ background: "transparent", border: "none", outline: "none", color: "#e8eaf0", fontSize: 12, width: "100%" }}
