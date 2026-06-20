@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Wallet, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react";
+import { API_URL } from "../imports/config";
 
 export function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,7 +14,6 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  const BACKEND_URL = "http://127.0.0.1:8000";
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ export function LoginPage() {
     try {
       if (isLogin) {
         // Login Flow
-        const response = await fetch(`${BACKEND_URL}/auth/login`, {
+        const response = await fetch(`${API_URL}/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export function LoginPage() {
         localStorage.setItem("token", data.access_token);
         
         // Fetch User profile to get name
-        const profileResponse = await fetch(`${BACKEND_URL}/auth/me`, {
+        const profileResponse = await fetch(`${API_URL}/auth/me`, {
           headers: {
             "Authorization": `Bearer ${data.access_token}`,
           },
@@ -60,7 +60,7 @@ export function LoginPage() {
 
       } else {
         // Register Flow
-        const response = await fetch(`${BACKEND_URL}/auth/register`, {
+        const response = await fetch(`${API_URL}/auth/register`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Calendar, Download, Trash2 } from "lucide-react";
-import { apiFetch, BACKEND_URL } from "../imports/api";
+import { apiFetch, API_URL } from "../imports/api";
 import { CategoryIcon } from "../imports/category_icons";
 
 interface ExpenseItem {
@@ -140,7 +140,7 @@ export function TransactionsPage() {
       const query = params.length > 0 ? `?${params.join("&")}` : "";
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${BACKEND_URL}/export/excel${query}`, {
+      const response = await fetch(`${API_URL}/export/excel${query}`, {
         method: "GET",
         headers: {
           ...(token ? { "Authorization": `Bearer ${token}` } : {}),

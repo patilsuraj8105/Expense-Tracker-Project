@@ -1,4 +1,6 @@
-export const BACKEND_URL = "http://127.0.0.1:8000";
+import { API_URL } from "./config";
+export { API_URL };
+export const BACKEND_URL = API_URL;
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
@@ -11,7 +13,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const url = endpoint.startsWith("http") ? endpoint : `${BACKEND_URL}${endpoint}`;
+  const url = endpoint.startsWith("http") ? endpoint : `${API_URL}${endpoint}`;
 
   const response = await fetch(url, {
     ...options,
